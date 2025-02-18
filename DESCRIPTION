@@ -1,0 +1,10 @@
+Package: FuzzyTesting
+Type: Package
+Title: Testing and Benchmarking of Fuzzy Outputs: Think AI generated content
+Version: 0.1.0
+Author: Sebastian Kranz
+Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
+Description: Testing and Benchmarking of Fuzzy Outputs: Think AI generated content
+License: GPL >= 2.0
+Encoding: UTF-8
+LazyData: true
