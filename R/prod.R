@@ -45,13 +45,13 @@ prods_define = function(...) {
   prods
 }
 
-prod_define = function(pid, fields, widens=NULL, parent=NULL) {
+prod_define = function(pid, fields, widens=NULL, parent=NULL, descr=NULL) {
   fields = lapply(fields, function(field) {
     field$is_key = first.non.null(field$is_key, FALSE)
     field$parse = first.non.null(field$parse, TRUE)
     field
   })
-  list(pid=pid, fields=fields, vars=names(fields), widens = widens, parent = parent)
+  list(pid=pid, fields=fields, vars=names(fields), widens = widens, parent = parent, descr=descr)
 }
 
 
