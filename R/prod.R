@@ -30,8 +30,7 @@ prods_define = function(...) {
 
     if (!is.null(prod$parent)) {
       pprod = prods[[prod$parent]]
-      keys = setdiff(pprod$keys, names(prod$fields))
-      prod$fields = c(pprod$fields[keys], prod$fields)
+      prod$fields = c(prod$fields[ prod[["from_parent"]] ], prod$fields)
     } else if (!is.null(prod$widens)) {
       pprod = prods[[prod$widens]]
       add_fields = setdiff(pprod$vars, prod$vars)
@@ -45,7 +44,7 @@ prods_define = function(...) {
   prods
 }
 
-prod_define = function(pid, fields, widens=NULL, parent=NULL, descr=NULL) {
+prod_define = function(pid, fields, widens=NULL, parent=NULL, from_parent=NULL, descr=NULL) {
   fields = lapply(fields, function(field) {
     field$is_key = first.non.null(field$is_key, FALSE)
     field$parse = first.non.null(field$parse, TRUE)
