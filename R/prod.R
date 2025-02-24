@@ -27,10 +27,12 @@ prods_define = function(...) {
 
   for (i in seq_along(prods)) {
     prod = prods[[i]]
+    #if (i == 4) stop()
 
     if (!is.null(prod$parent)) {
       pprod = prods[[prod$parent]]
-      prod$fields = c(prod$fields[ prod[["from_parent"]] ], prod$fields)
+      prod$fields = c(pprod$fields[ prod[["from_parent"]] ], prod$fields)
+      prod$vars = names(prod$fields)
     } else if (!is.null(prod$widens)) {
       pprod = prods[[prod$widens]]
       add_fields = setdiff(pprod$vars, prod$vars)
@@ -45,12 +47,12 @@ prods_define = function(...) {
 }
 
 prod_define = function(pid, fields, widens=NULL, parent=NULL, from_parent=NULL, descr=NULL) {
+  restore.point("prod_define")
   fields = lapply(fields, function(field) {
-    field$is_key = first.non.null(field$is_key, FALSE)
-    field$parse = first.non.null(field$parse, TRUE)
+    #field$is_key = first.non.null(field$is_key, FALSE)
     field
   })
-  list(pid=pid, fields=fields, vars=names(fields), widens = widens, parent = parent, descr=descr)
+  list(pid=pid, fields=fields, vars=names(fields), widens = widens, parent = parent, from_parent=from_parent, descr=descr)
 }
 
 
