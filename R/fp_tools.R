@@ -1,3 +1,14 @@
+rename_cols = function (x, old_cols, new_cols)
+{
+  restore_point("rename_cols")
+  inds = match(old_cols, names(x))
+  old_cols = old_cols[!is.na(inds)]
+  new_cols = new_cols[!is.na(inds)]
+  inds = inds[!is.na(inds)]
+  names(x)[inds] = new_cols
+  x
+}
+
 
 select_cols = function(df, cols) {
   restore.point("select_cols")
