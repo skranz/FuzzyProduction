@@ -10,12 +10,12 @@ example = function() {
 
   df = fp_all_ver_info(fp_dir)
 
-  df = fp_load_all_ver_df(fp_dir, "cell_base")
+  df = fp_load_all_prod_df(fp_dir, "cell_base")
 }
 
-fp_load_newest_ver_df = function(fp_dir, prod_id, proc_id, add_ids=TRUE) {
+fp_load_newest_prod_df = function(fp_dir, prod_id, proc_id, add_ids=TRUE) {
   ver_dir = fp_newest_ver_dir(fp_dir, prod_id, proc_id)
-  fp_load_ver_df(ver_dir,add_ids=add_ids)
+  fp_load_prod_df(ver_dir,add_ids=add_ids)
 }
 
 fp_newest_ver_dir = function(fp_dir, prod_id, proc_id=NULL) {
@@ -27,10 +27,10 @@ fp_newest_ver_dir = function(fp_dir, prod_id, proc_id=NULL) {
     pull(ver_dir)
 }
 
-fp_load_all_ver_df = function(fp_dir, prod_id, add_ids=TRUE, as_df = TRUE) {
-  restore.point("fp_load_all_ver_df")
+fp_load_all_prod_df = function(fp_dir, prod_id, add_ids=TRUE, as_df = TRUE) {
+  restore.point("fp_load_all_prod_df")
   ver_dirs = fp_all_ver_dirs(fp_dir, prod_id, only_success = TRUE)
-  df_li = lapply(ver_dirs, fp_load_ver_df, add_ids=add_ids)
+  df_li = lapply(ver_dirs, fp_load_prod_df, add_ids=add_ids)
   if (!as_df) return(df_li)
   df = bind_rows(df_li)
   df
@@ -42,18 +42,19 @@ fp_ver_dir_to_ids = function(ver_dir) {
   proc_id = basename(dname)
   prod_id = basename(dirname(dname))
   ver_id = paste0(proc_id,"--", basename(ver_dir))
-  data.frame(prod_id=prod_id, proc_id=proc_id, ver_id=ver_id, ver_dir=ver_dir)
+  ver_ind = as.integer(stri_sub(basename(ver_dir),2))
+  data.frame(prod_id=prod_id, proc_id=proc_id, ver_id=ver_id, ver_ind=ver_ind, ver_dir=ver_dir)
 }
 
-fp_load_ver_df = function(ver_dir = ver_dir, ver_df=NULL, add_ids=FALSE) {
-  restore.point("fp_load_ver_df")
-  if (!is.null(ver_df)) return(ver_df)
-  ver_df = readRDS(file.path(ver_dir, "ver_df.Rds"))
+fp_load_prod_df = function(ver_dir = ver_dir, prod_df=NULL, add_ids=FALSE) {
+  restore.point("fp_load_prod_df")
+  if (!is.null(prod_df)) return(prod_df)
+  prod_df = readRDS(file.path(ver_dir, "prod_df.Rds"))
   if (add_ids) {
     id_df = fp_ver_dir_to_ids(ver_dir)
-    ver_df = add_col_left(ver_df, proc_id=id_df$proc_id, ver_id=id_df$ver_id)
+    prod_df = add_col_left(prod_df, proc_id=id_df$proc_id, ver_id=id_df$ver_id)
   }
-  ver_df
+  prod_df
 
 }
 
@@ -76,7 +77,7 @@ fp_all_proc_id = function(fp_dir, prod_id=NULL) {
 fp_all_proc_dir = function(fp_dir, prod_id, only_success=TRUE) {
   fp_dir = file.path(fp_dir,"fp","prod_vers",prod_id)
   if (only_success) {
-    files = list.files(fp_dir, glob2rx("ver_df.Rds"),full.names = TRUE, recursive=TRUE)
+    files = list.files(fp_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
   } else {
     stop("Not yet implemented with only_success = FALSE")
@@ -91,7 +92,7 @@ fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, only_success=TRUE)
   if (!is.null(prod_id) & !is.null(proc_id)) parent.dir = file.path(fp_dir, proc_id)
 
   if (only_success) {
-    files = list.files(fp_dir, glob2rx("ver_df.Rds"),full.names = TRUE, recursive=TRUE)
+    files = list.files(fp_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
   } else {
     stop("Not yet implemented with only_success = FALSE")
@@ -106,13 +107,13 @@ fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, only_success=TRUE)
   if (!is.null(prod_id) & !is.null(proc_id)) fp_dir = file.path(fp_dir, proc_id)
 
   if (only_success) {
-    files = list.files(fp_dir, glob2rx("ver_df.Rds"),full.names = TRUE, recursive=TRUE)
+    files = list.files(fp_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
     df = fp_ver_dir_to_ids(ver_dirs) %>%
       mutate(
         mtime = file.mtime(files),
-        ver_df_file = files,
-        ver_df_mb = file.size(files) / 1e6
+        prod_df_file = files,
+        prod_df_mb = file.size(files) / 1e6
       )
     return(df)
 

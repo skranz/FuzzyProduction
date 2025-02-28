@@ -21,9 +21,11 @@ pru_next_stage = function(pru, stage_fn) {
 }
 
 
-pru_run_stage_items = function(pru, run_fun, num_items=pru$num_items, fill_incomplete=isTRUE(pru$is_incomplete), backup_incomplete=TRUE, verbose = TRUE) {
-  restore.point("pru_run_all_rai")
-  if (fill_incomplete & !is.null(pru$ai_li)) {
+pru_run_stage_items = function(pru, run_fun, num_items=NROW(df), fill_incomplete=isTRUE(pru$is_incomplete), backup_incomplete=TRUE, verbose = TRUE, df=NULL) {
+  restore.point("pru_run_stage_items")
+
+  stage_results = pru$stage_results[[pru$cur_stage]]
+  if (fill_incomplete & length(stage_results)>0) {
     rows = pru$incomplete_rows
   } else {
     rows = seq_len(pru$nrow)

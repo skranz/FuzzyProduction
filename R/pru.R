@@ -1,6 +1,6 @@
 #' Initialize a production run
-pru_init = function(fp_dir,prod_id, proc_id, to_v0=TRUE, ver_dir=NULL, ...) {
-  pru = list(fp_dir=fp_dir,prod_id=prod_id, proc_id=proc_id, to_v0=to_v0, ...)
+pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_dir=NULL,proc_info=NULL, ...) {
+  pru = list(fp_dir=fp_dir,prod_id=prod_id, proc_id=proc_id, to_v0=to_v0, proc_info=proc_info, ...)
   pru$proc_dir = proc_dir = file.path(fp_dir,pru$prod_id, pru$proc_id)
 
   if (to_v0) {
