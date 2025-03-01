@@ -20,7 +20,7 @@ pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_d
   pru
 }
 
-pru_save = function(pru, prod_df, save_fields=NULL, save_pru=TRUE) {
+pru_save = function(pru, prod_df, save_fields=c("proc_info"), save_pru=TRUE) {
   restore.point("pru_save")
   if (!dir.exists(pru$ver_dir)) dir.create(pru$ver_dir, recursive = TRUE)
 
@@ -52,3 +52,53 @@ pru_backport_save = function(pru,bp_prod, prod_df=pru$prod_df) {
   bp = pru_save(pru,bp_prod_df)
   invisible(bp)
 }
+
+
+pru_next_stage = function(pru, stage_fn) {
+  restore.point("pru_next_stage")
+  pru$cur_stage = stage_fn
+  pru$items = NULL
+  pru$outage_inds = pru$item_status = pru$item_cat =   pru$num_outage =
+    pru$num_error =  pru$num_ok  = pru$all_ok = NULL
+  NULL
+  do.call(stage_fn, list(pru))
+}
+
+
+pru_make_items = function(pru, run_fun, num_items=NROW(df), fill_outage=TRUE, backup_outage=TRUE, verbose = TRUE, df=NULL, cont_fine_statuss = c("ok","no_status")) {
+  restore.point("pru_make_items")
+  items = pru[["items"]]
+  if (is.null(items)) items = vector("list", num_items)
+
+  if(fill_outage & length(pru$outage_inds)>0) {
+    broad_statuss = sapply(items, fp_broad_status)
+    inds = which(broad_statuss != "ok")
+  } else {
+    inds = seq_along(items)
+  }
+  start_time = as.numeric(Sys.time())
+  if (verbose) cat(paste0("\nRun ",NROW(inds)," AI calls "))
+  ind = 1
+  for (ind in inds) {
+    item = run_fun(ind, pru)
+    items[[ind]] = item
+    status = fp_fine_status(item)
+    if (verbose) {
+      if (status %in% c("ok")) {
+        cat(".")
+      } else if (status == "no_status") {
+        cat("?")
+      } else {
+        cat(paste0("\n  item ",ind, ": ", status,"\n"))
+      }
+    }
+    if (!status %in% cont_fine_statuss) {
+      break
+    }
+  }
+  pru$items = items
+  restore.point("pru_run_all_rai_post")
+  if (verbose) cat(paste0(" ", round(as.numeric(Sys.time())-start_time), " sec.\n"))
+  pru
+}
+

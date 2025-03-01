@@ -1,3 +1,7 @@
+file_remove_existing = function(file) {
+  if (file.exists(file)) file.remove(file)
+}
+
 rename_cols = function (x, old_cols, new_cols)
 {
   restore_point("rename_cols")
