@@ -6,7 +6,7 @@
 # "outage" e.g. due to rate limit. attempt again in a latter run
 # "error"
 
-pru_set_status = function(pru, items=pru[[items]],forbid_any_error=TRUE, forbid_any_outage=TRUE, save_pru_if_outage = TRUE, save_pru_if_error = FALSE) {
+pru_set_status = function(pru, items=pru[[items]],forbid_any_error=TRUE, forbid_any_outage=TRUE, save_pru_if_outage = TRUE, save_pru_if_error = TRUE) {
   restore.point("pru_set_status")
   fine_status = fp_fine_status(items)
   if (fine_status == "no_status" & isTRUE(is.list(items))) {

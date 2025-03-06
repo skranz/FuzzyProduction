@@ -7,6 +7,8 @@ example = function() {
   proc_id = "tab_html_hx_pdf"
   fp_newest_ver_dir(fp_dir, prod_id, proc_id)
 
+  fp_all_outage_ver_dirs(project_dir)
+  fp_all_error_ver_dirs(project_dir)
 
   df = fp_all_ver_info(fp_dir)
 
@@ -85,14 +87,24 @@ fp_all_proc_dir = function(fp_dir, prod_id, only_success=TRUE) {
   unique(ver_dirs)
 }
 
+fp_all_outage_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = if (need_backup) "outage_pru.Rds" else "has_outage.txt", need_backup=TRUE) {
+  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
+}
 
-fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, only_success=TRUE) {
+
+
+fp_all_error_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = if (need_backup) "error_pru.Rds" else "has_error.txt",  need_backup=FALSE) {
+  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
+}
+
+
+fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
   fp_dir = file.path(fp_dir,"fp","prod_vers")
   if (!is.null(prod_id)) parent.dir = file.path(fp_dir, prod_id)
   if (!is.null(prod_id) & !is.null(proc_id)) parent.dir = file.path(fp_dir, proc_id)
 
-  if (only_success) {
-    files = list.files(fp_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
+  if (!is.null(search_file)) {
+    files = list.files(fp_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
   } else {
     stop("Not yet implemented with only_success = FALSE")
@@ -101,13 +113,13 @@ fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, only_success=TRUE)
 }
 
 
-fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, only_success=TRUE) {
+fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
   restore.point("fp_all_ver_info")
   if (!is.null(prod_id)) fp_dir = file.path(fp_dir, prod_id)
   if (!is.null(prod_id) & !is.null(proc_id)) fp_dir = file.path(fp_dir, proc_id)
 
-  if (only_success) {
-    files = list.files(fp_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
+  if (!is.null(search_file)) {
+    files = list.files(fp_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
     df = fp_ver_dir_to_ids(ver_dirs) %>%
       mutate(
@@ -120,6 +132,24 @@ fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, only_success=TRUE)
   } else {
     stop("Not yet implemented with only_success = FALSE")
   }
+}
+
+
+fp_rerun_error_ver = function(ver_dir, pru_file = file.path(ver_dir, "error_pru.Rds")) {
+  if (!file.exists(pru_file)) {
+    cat("\n", pru_file, " does not exist. Cannot re-run.\n")
+  }
+  pru = readRDS(pru_file)
+  pru_rerun(pru)
+}
+
+fp_rerun_outage_ver = function(ver_dir,pru_file = file.path(ver_dir, "error_pru.Rds")) {
+  fp_rerun_error_ver(ver_dir, pru_file)
+}
+
+fp_rerun_all_outage_ver = function(fp_dir, prod_id=NULL,proc_id=NULL, ver_dirs = fp_outage_ver_dirs(fp_dir, prod_id, proc_id,need_backup = TRUE)) {
+  restore.point("fp_rerun_all_outage_ver")
+  if (length(ver_dirs)==0) return("\nNo outage version found.")
 }
 
 

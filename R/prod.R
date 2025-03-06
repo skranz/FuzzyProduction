@@ -23,7 +23,7 @@ prod_na_df = function(prod, len=1) {
 prods_define = function(...) {
   prods = list(...)
   restore.point("fp_prods")
-  names(prods) = sapply(prods, function(prod) prod$pid)
+  names(prods) = sapply(prods, function(prod) prod$prod_id)
 
   for (i in seq_along(prods)) {
     prod = prods[[i]]
@@ -47,13 +47,13 @@ prods_define = function(...) {
   prods
 }
 
-prod_define = function(pid, fields, widens=NULL, parent=NULL, from_parent=NULL, descr=NULL,keys=NULL, ...) {
+prod_define = function(prod_id, fields, widens=NULL, parent=NULL, from_parent=NULL, descr=NULL,keys=NULL, ...) {
   restore.point("prod_define")
   fields = lapply(fields, function(field) {
     #field$is_key = first.non.null(field$is_key, FALSE)
     field
   })
-  list(pid=pid, fields=fields,keys=keys, vars=names(fields), widens = widens, parent = parent, from_parent=from_parent, descr=descr)
+  list(prod_id=prod_id, fields=fields,keys=keys, vars=names(fields), widens = widens, parent = parent, from_parent=from_parent, descr=descr)
 }
 
 
