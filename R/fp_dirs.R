@@ -48,6 +48,20 @@ fp_ver_dir_to_ids = function(ver_dir) {
   data.frame(prod_id=prod_id, proc_id=proc_id, ver_id=ver_id, ver_ind=ver_ind, ver_dir=ver_dir)
 }
 
+fp_ver_dir_to_prod_id = function(ver_dir) {
+  dname = dirname(ver_dir)
+  prod_id = basename(dirname(dname))
+  prod_id
+}
+
+
+fp_ver_dir_to_proc_id = function(ver_dir) {
+  dname = dirname(ver_dir)
+  proc_id = basename(dname)
+  proc_id
+}
+
+
 fp_load_prod_df = function(ver_dir = ver_dir, prod_df=NULL, add_ids=FALSE) {
   restore.point("fp_load_prod_df")
   if (!is.null(prod_df)) return(prod_df)
@@ -94,6 +108,11 @@ fp_all_outage_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file
 
 
 fp_all_error_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = if (need_backup) "error_pru.Rds" else "has_error.txt",  need_backup=FALSE) {
+  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
+}
+
+
+fp_all_ok_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
   fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
 }
 

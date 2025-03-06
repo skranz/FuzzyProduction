@@ -1,3 +1,13 @@
+first_nn = function (...)
+{
+  args = list(...)
+  for (val in args) {
+    if (!is.null(val))
+      return(val)
+  }
+  return(NULL)
+}
+
 file_remove_existing = function(file) {
   if (file.exists(file)) file.remove(file)
 }
