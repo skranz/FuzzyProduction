@@ -31,7 +31,7 @@ fp_newest_ver_dir = function(fp_dir, prod_id, proc_id=NULL) {
 
 fp_load_all_prod_df = function(fp_dir, prod_id, add_ids=TRUE, as_df = TRUE) {
   restore.point("fp_load_all_prod_df")
-  ver_dirs = fp_all_ver_dirs(fp_dir, prod_id, only_success = TRUE)
+  ver_dirs = fp_all_ver_dirs(fp_dir, prod_id)
   df_li = lapply(ver_dirs, fp_load_prod_df, add_ids=add_ids)
   if (!as_df) return(df_li)
   df = bind_rows(df_li)
@@ -118,12 +118,13 @@ fp_all_ok_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "
 
 
 fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
-  fp_dir = file.path(fp_dir,"fp","prod_vers")
-  if (!is.null(prod_id)) parent.dir = file.path(fp_dir, prod_id)
-  if (!is.null(prod_id) & !is.null(proc_id)) parent.dir = file.path(fp_dir, proc_id)
+  restore.point("fp_all_ver_dirs")
+  parent_dir = fp_dir
+  if (!is.null(prod_id)) parent_dir = file.path(fp_dir, prod_id)
+  if (!is.null(prod_id) & !is.null(proc_id)) parent_dir = file.path(fp_dir, proc_id)
 
   if (!is.null(search_file)) {
-    files = list.files(fp_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
+    files = list.files(parent_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
   } else {
     stop("Not yet implemented with only_success = FALSE")
@@ -139,6 +140,8 @@ fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "pro
 
   if (!is.null(search_file)) {
     files = list.files(fp_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
+    if (NROW(files)==0) return(NULL)
+
     ver_dirs = dirname(files)
     df = fp_ver_dir_to_ids(ver_dirs) %>%
       mutate(

@@ -35,24 +35,36 @@ prods_define = function(...) {
       prod$vars = names(prod$fields)
       prod$parent_keys = pprod$keys
     } else if (!is.null(prod$widens)) {
-      pprod = prods[[prod$widens]]
-      add_fields = setdiff(pprod$vars, prod$vars)
-      prod$fields = c(pprod$fields[add_fields], prod$fields)
-      prod$vars = names(prod$fields)
+      #if (length(prod$widens)>1)
+      #  restore.point("kshjkdhsfksjflksdlj")
+      vars = unique(unlist(lapply(prod$widens, function(w)
+        prods[[w]]$vars
+      )))
+      for (w in rev(prod$widens)) {
+        pprod = prods[[w]]
+        add_fields = setdiff(pprod$vars, prod$vars)
+        prod$fields = c(pprod$fields[add_fields], prod$fields)
+        prod$keys = union(prod$keys, pprod$keys)
+        prod$vars = names(prod$fields)
+      }
+      vars = union(vars, names(prod$fields))
+      prod$fields = prod$fields[vars]
+      prod$vars = vars
     }
-    is_key = sapply(prod$fields, function(field) isTRUE(field$is_key))
-    prod$keys = prod$vars[is_key]
+    #is_key = sapply(prod$fields, function(field) isTRUE(field$is_key))
+    #prod$keys = prod$vars[is_key]
     prods[[i]] = prod
   }
   prods
 }
 
-prod_define = function(prod_id, fields, widens=NULL, parent=NULL, from_parent=NULL, descr=NULL,keys=NULL, ...) {
+prod_define = function(prod_id, fields=NULL, widens=NULL, parent=NULL, from_parent=NULL, descr=NULL,keys=NULL, ...) {
   restore.point("prod_define")
-  fields = lapply(fields, function(field) {
+  #fields = lapply(fields, function(field) {
     #field$is_key = first.non.null(field$is_key, FALSE)
-    field
-  })
+  #  field
+  #})
+  if (is.null(fields)) fields = list()
   list(prod_id=prod_id, fields=fields,keys=keys, vars=names(fields), widens = widens, parent = parent, from_parent=from_parent, descr=descr)
 }
 
