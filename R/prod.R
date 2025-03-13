@@ -73,6 +73,8 @@ prod_define = function(prod_id, fields=NULL, widens=NULL, parent=NULL, from_pare
 #' product data frames
 df_to_prod_df = function(df, prod,  df_to_prod_cols=NULL,prod_to_df_cols=NULL, prod_df=NULL) {
   restore.point("df_to_prod_df")
+  if (isTRUE(is.character(prod))) stop("prod must be the actual product (an R list) not just the prod_id.")
+
   if (is(df, "try-error")) return(prod_empty_df(prod))
   len = NROW(df)
   if (len==0) return(prod_empty_df(prod))

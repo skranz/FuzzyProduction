@@ -22,10 +22,13 @@ pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_d
     pru$ver_dir = paste0(pru$proc_dir, "/v", pru$ver_ind)
   } else {
     pru$proc_dir = proc_dir = dirname(ver_dir)
+    pru$proc_id = basename(pru$proc_dir)
     pru$ver_dir = ver_dir
     pru$ver_id = basename(ver_dir)
     pru$ver_ind = as.integer(stri_sub(pru$ver_id, 2))
   }
+
+
   if (length(pru$proc_dir)==0) stop("proc_dir not correctly specified.")
   pru
 }
