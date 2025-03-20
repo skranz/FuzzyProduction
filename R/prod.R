@@ -3,8 +3,8 @@ example = function() {
 }
 
 
-prod_to_json_schema = function(prod, add_description=TRUE) {
-  schema = prod_to_schema(prod)
+prod_to_json_schema = function(prod,obj_arr=c("obj","arr")[1], add_description=TRUE) {
+  schema = prod_to_schema(prod,obj_arr)
   DataSchema::to_json_schema(schema,add_description = TRUE)
 }
 
@@ -84,7 +84,7 @@ prod_define = function(prod_id, fields=NULL, widens=NULL, parent=NULL, from_pare
 
 #' Somewhat flexible function to convert results data frames into proper
 #' product data frames
-df_to_prod_df = function(df, prod,  df_to_prod_cols=NULL,prod_to_df_cols=NULL, prod_df=NULL) {
+df_to_prod_df = function(df, prod,  df_to_prod_cols=NULL,prod_to_df_cols=NULL, prod_df=NULL, convert_class=TRUE) {
   restore.point("df_to_prod_df")
   if (isTRUE(is.character(prod))) stop("prod must be the actual product (an R list) not just the prod_id.")
 
@@ -112,6 +112,15 @@ df_to_prod_df = function(df, prod,  df_to_prod_cols=NULL,prod_to_df_cols=NULL, p
   # Ensures correct order and possibly removes extra variables
   if (!identical(names(prod_df), prod$vars))
     prod_df = prod_df[, prod$vars]
+
+  if (convert_class) {
+    prod_df = prod_set_df_col_class(df, prod)
+  }
   prod_df
 }
 
+prod_set_df_col_class = function(df, prod) {
+  schema = prod_to_schema(prod)
+  schema_set_df_col_class(df, schema)
+
+}

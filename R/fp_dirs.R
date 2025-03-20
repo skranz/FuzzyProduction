@@ -15,27 +15,15 @@ example = function() {
   df = fp_load_all_prod_df(fp_dir, "cell_base")
 }
 
-fp_load_newest_prod_df = function(fp_dir, prod_id, proc_id, add_ids=TRUE) {
-  ver_dir = fp_newest_ver_dir(fp_dir, prod_id, proc_id)
-  fp_load_prod_df(ver_dir,add_ids=add_ids)
-}
-
 fp_newest_ver_dir = function(fp_dir, prod_id, proc_id=NULL) {
+  restore.point("fp_newest_ver_dir")
   info = fp_all_ver_info(fp_dir, prod_id=prod_id, proc_id=proc_id)
+  if (NROW(info)==0) return(NULL)
   info %>%
     group_by(prod_id, proc_id) %>%
     arrange(desc(mtime)) %>%
     slice(1) %>%
     pull(ver_dir)
-}
-
-fp_load_all_prod_df = function(fp_dir, prod_id, add_ids=TRUE, as_df = TRUE) {
-  restore.point("fp_load_all_prod_df")
-  ver_dirs = fp_all_ver_dirs(fp_dir, prod_id)
-  df_li = lapply(ver_dirs, fp_load_prod_df, add_ids=add_ids)
-  if (!as_df) return(df_li)
-  df = bind_rows(df_li)
-  df
 }
 
 fp_ver_dir_to_fp_dir = function(ver_dir) {
@@ -70,18 +58,6 @@ fp_ver_dir_to_proc_id = function(ver_dir) {
   proc_id
 }
 
-
-fp_load_prod_df = function(ver_dir = ver_dir, prod_df=NULL, add_ids=FALSE) {
-  restore.point("fp_load_prod_df")
-  if (!is.null(prod_df)) return(prod_df)
-  prod_df = readRDS(file.path(ver_dir, "prod_df.Rds"))
-  if (add_ids) {
-    id_df = fp_ver_dir_to_ids(ver_dir)
-    prod_df = add_col_left(prod_df, proc_id=id_df$proc_id, ver_id=id_df$ver_id)
-  }
-  prod_df
-
-}
 
 fp_all_prod_id = function(fp_dir) {
   list.dirs(fp_dir,full.names = FALSE,recursive = FALSE)
@@ -158,16 +134,28 @@ fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "pro
 }
 
 
-fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
+fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds", strict_fp_dir=FALSE) {
   restore.point("fp_all_ver_info")
-  if (!is.null(prod_id)) fp_dir = file.path(fp_dir, prod_id)
-  if (!is.null(prod_id) & !is.null(proc_id)) fp_dir = file.path(fp_dir, proc_id)
+  if (!is.null(prod_id) & strict_fp_dir) fp_dir = file.path(fp_dir, prod_id)
+  if (!is.null(prod_id) & !is.null(proc_id) & strict_fp_dir) fp_dir = file.path(fp_dir, proc_id)
 
   if (!is.null(search_file)) {
     files = list.files(fp_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
     if (NROW(files)==0) return(NULL)
 
     ver_dirs = dirname(files)
+    if (!is.null(prod_id) & !strict_fp_dir) {
+      prod_ids = fp_ver_dir_to_prod_id(ver_dirs)
+      ver_dirs = ver_dirs[prod_ids %in% prod_id]
+      files = files[prod_ids %in% prod_id]
+    }
+    if (!is.null(proc_id) & !strict_fp_dir) {
+      proc_ids = fp_ver_dir_to_proc_id(ver_dirs)
+      ver_dirs = ver_dirs[proc_ids %in% proc_id]
+      files = files[proc_ids %in% proc_id]
+    }
+    if (NROW(ver_dirs)==0) return(NULL)
+
     df = fp_ver_dir_to_ids(ver_dirs) %>%
       mutate(
         mtime = file.mtime(files),
