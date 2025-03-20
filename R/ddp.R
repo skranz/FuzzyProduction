@@ -14,11 +14,13 @@
 #' We then may want to simply keep the version and run names of
 #' the original run and just change the product.
 ddp_get_ver_dir = function(ver_dir, ddp_prod_id, ddp_proc_id = NULL) {
+  restore.point("ddp_get_ver_dir")
   ver_id = basename(ver_dir)
   if (is.null(ddp_proc_id)) {
     ddp_proc_id = basename(dirname(ver_dir))
   }
-  ddp_ver_dir = file.path(project_dir, "rai/prod_runs/",ddp_prod_id, ddp_proc_id, ver_id)
+  fp_dir = fp_ver_dir_to_fp_dir(ver_dir)
+  ddp_ver_dir = file.path(fp_dir,ddp_prod_id, ddp_proc_id, ver_id)
 }
 
 ddp_is_up_to_date = function(ver_dir, ddp_prod_id) {
@@ -54,10 +56,9 @@ ddp_init_pru = function(pru, ddp_prod_id, prods = repbox_prods(), ver_dir=pru$ve
 #'
 #' Will be typically called from a wrapper function like \code{hx_all_tab_html_to_cell_list}
 #'
-ddp_derive_all_instances = function(project_dir,from_prod_id, to_prod_id, convert_fun,  overwrite=FALSE) {
+ddp_derive_all_instances = function(parent_dir,from_prod_id, to_prod_id, convert_fun,  overwrite=FALSE) {
   restore.point("ddp_derive_all_instances")
-  from_parent_dir = file.path(project_dir, "rai/prod_runs", from_prod_id)
-  from_files = list.files(from_parent_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
+  from_files = list.files(parent_dir, glob2rx("prod_df.Rds"),full.names = TRUE, recursive=TRUE)
   file = from_files[1]
   for (file in from_files) {
     ver_dir = dirname(file)

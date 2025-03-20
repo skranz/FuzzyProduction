@@ -38,6 +38,8 @@ pru_set_status = function(pru, items=pru[[items]],forbid_any_error=TRUE, forbid_
   pru$broad_status = broad_status
   file_remove_existing(file.path(pru$ver_dir,"has_outage.txt"))
   file_remove_existing(file.path(pru$ver_dir,"has_error.txt"))
+  file_remove_existing(file.path(pru$ver_dir,"error_pru.Rds"))
+  file_remove_existing(file.path(pru$ver_dir,"outage_pru.Rds"))
 
   if (pru$num_outage > 0) {
     if (!dir.exists(pru$ver_dir)) dir.create(pru$ver_dir, recursive = TRUE)

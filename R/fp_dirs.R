@@ -38,6 +38,15 @@ fp_load_all_prod_df = function(fp_dir, prod_id, add_ids=TRUE, as_df = TRUE) {
   df
 }
 
+fp_ver_dir_to_fp_dir = function(ver_dir) {
+  dirname(dirname(dirname(ver_dir)))
+}
+
+fp_ver_dir_to_prod_dir = function(ver_dir) {
+  dirname(dirname(ver_dir))
+}
+
+
 
 fp_ver_dir_to_ids = function(ver_dir) {
   dname = dirname(ver_dir)
@@ -79,14 +88,17 @@ fp_all_prod_id = function(fp_dir) {
 }
 
 
-fp_all_proc_id = function(fp_dir, prod_id=NULL) {
-  fp_dir = file.path(fp_dir,"fp","prod_vers")
+fp_all_proc_id = function(fp_dir, prod_id=NULL, ends_with=NULL) {
   if (is.null(prod_id)) {
     prod_id_dirs = list.dirs(fp_dir,full.names = TRUE,recursive = FALSE)
   } else {
     prod_id_dirs = file.path(fp_dir, prod_id)
   }
-  list.dirs(prod_id_dirs,full.names = FALSE,recursive = FALSE)
+  proc_ids = list.dirs(prod_id_dirs,full.names = FALSE,recursive = FALSE)
+  if (!is.null(ends_with)) {
+    proc_ids = proc_ids[endsWith(proc_ids, ends_with())]
+  }
+  proc_ids
 }
 
 
@@ -102,6 +114,7 @@ fp_all_proc_dir = function(fp_dir, prod_id, only_success=TRUE) {
 }
 
 fp_all_outage_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = if (need_backup) "outage_pru.Rds" else "has_outage.txt", need_backup=TRUE) {
+  restore.point("fp_all_outage_ver_dirs")
   fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
 }
 
@@ -111,23 +124,35 @@ fp_all_error_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file 
   fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
 }
 
+fp_ver_dir_ok = function(ver_dir, search_file = "prod_df.Rds") {
+  file.exists(file.path(ver_dir, search_file))
+}
 
 fp_all_ok_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
   fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
 }
 
 
-fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
+
+fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds", strict_fp_dir=FALSE) {
   restore.point("fp_all_ver_dirs")
   parent_dir = fp_dir
-  if (!is.null(prod_id)) parent_dir = file.path(fp_dir, prod_id)
-  if (!is.null(prod_id) & !is.null(proc_id)) parent_dir = file.path(fp_dir, proc_id)
+  if (!is.null(prod_id) & strict_fp_dir) parent_dir = file.path(fp_dir, prod_id)
+  if (!is.null(prod_id) & !is.null(proc_id) & strict_fp_dir) parent_dir = file.path(fp_dir, proc_id)
 
   if (!is.null(search_file)) {
     files = list.files(parent_dir, glob2rx(search_file),full.names = TRUE, recursive=TRUE)
     ver_dirs = dirname(files)
   } else {
     stop("Not yet implemented with only_success = FALSE")
+  }
+  if (!is.null(prod_id) & !strict_fp_dir) {
+    prod_ids = fp_ver_dir_to_prod_id(ver_dirs)
+    ver_dirs = ver_dirs[prod_ids %in% prod_id]
+  }
+  if (!is.null(proc_id) & !strict_fp_dir) {
+    proc_ids = fp_ver_dir_to_proc_id(ver_dirs)
+    ver_dirs = ver_dirs[proc_ids %in% proc_id]
   }
   unique(ver_dirs)
 }
@@ -165,14 +190,23 @@ fp_rerun_error_ver = function(ver_dir, pru_file = file.path(ver_dir, "error_pru.
   pru_rerun(pru)
 }
 
-fp_rerun_outage_ver = function(ver_dir,pru_file = file.path(ver_dir, "error_pru.Rds")) {
+fp_rerun_outage_ver = function(ver_dir,pru_file = file.path(ver_dir, "outage_pru.Rds")) {
   fp_rerun_error_ver(ver_dir, pru_file)
 }
 
 fp_rerun_all_outage_ver = function(fp_dir, prod_id=NULL,proc_id=NULL, ver_dirs = fp_outage_ver_dirs(fp_dir, prod_id, proc_id,need_backup = TRUE)) {
   restore.point("fp_rerun_all_outage_ver")
   if (length(ver_dirs)==0) return("\nNo outage version found.")
+  for (ver_dir in ver_dirs) {
+    fp_rerun_outage_ver(ver_dir)
+  }
 }
 
-
+fp_rerun_all_error_ver = function(fp_dir, prod_id=NULL,proc_id=NULL, ver_dirs = fp_error_ver_dirs(fp_dir, prod_id, proc_id,need_backup = TRUE)) {
+  restore.point("fp_rerun_all_outage_ver")
+  if (length(ver_dirs)==0) return("\nNo outage version found.")
+  for (ver_dir in ver_dirs) {
+    fp_rerun_error_ver(ver_dir)
+  }
+}
 

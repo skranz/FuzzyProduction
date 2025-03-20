@@ -2,6 +2,12 @@ example = function() {
 
 }
 
+
+prod_to_json_schema = function(prod, add_description=TRUE) {
+  schema = prod_to_schema(prod)
+  DataSchema::to_json_schema(schema,add_description = TRUE)
+}
+
 prod_to_schema = function(prod, obj_arr=c("obj","arr")[1]) {
   if (obj_arr=="arr") {
     schema_arr(schema_obj(prod$fields))
@@ -20,9 +26,14 @@ prod_na_df = function(prod, len=1) {
 
 
 
-prods_define = function(...) {
+prods_define = function(..., .lists=NULL) {
   prods = list(...)
   restore.point("fp_prods")
+  if (!is.null(.lists)) {
+    prods = c(prods, do.call(c, .lists))
+  }
+
+
   names(prods) = sapply(prods, function(prod) prod$prod_id)
 
   for (i in seq_along(prods)) {
@@ -65,7 +76,9 @@ prod_define = function(prod_id, fields=NULL, widens=NULL, parent=NULL, from_pare
   #  field
   #})
   if (is.null(fields)) fields = list()
-  list(prod_id=prod_id, fields=fields,keys=keys, vars=names(fields), widens = widens, parent = parent, from_parent=from_parent, descr=descr)
+  prod = list(prod_id=prod_id, fields=fields,keys=keys, vars=names(fields), widens = widens, parent = parent, from_parent=from_parent, descr=descr)
+  class(prod) = c("fp_prod","list")
+  prod
 }
 
 
