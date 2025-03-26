@@ -1,3 +1,8 @@
+na_val = function(x, val=0) {
+  x[is.na(x)] = val
+  x
+}
+
 first_nn = function (...)
 {
   args = list(...)

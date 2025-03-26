@@ -100,6 +100,10 @@ fp_all_error_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file 
   fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
 }
 
+fp_has_prod_df = function(ver_dir) {
+  file.exists(file.path(ver_dir, "prod_df.Rds"))
+}
+
 fp_ver_dir_ok = function(ver_dir, search_file = "prod_df.Rds") {
   file.exists(file.path(ver_dir, search_file))
 }
@@ -110,7 +114,7 @@ fp_all_ok_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "
 
 
 
-fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds", strict_fp_dir=FALSE) {
+fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, ver_ind = NULL, search_file = "prod_df.Rds", strict_fp_dir=FALSE) {
   restore.point("fp_all_ver_dirs")
   parent_dir = fp_dir
   if (!is.null(prod_id) & strict_fp_dir) parent_dir = file.path(fp_dir, prod_id)
@@ -130,6 +134,11 @@ fp_all_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "pro
     proc_ids = fp_ver_dir_to_proc_id(ver_dirs)
     ver_dirs = ver_dirs[proc_ids %in% proc_id]
   }
+  if (!is.null(ver_ind)) {
+    ver_ind_str = paste0("v", ver_ind)
+    ver_dirs[basename(ver_dirs) %in% ver_ind_str]
+  }
+
   unique(ver_dirs)
 }
 
@@ -198,3 +207,23 @@ fp_rerun_all_error_ver = function(fp_dir, prod_id=NULL,proc_id=NULL, ver_dirs = 
   }
 }
 
+fp_proc_dir_to_new_ver_dir = function(proc_dir, to_v0=TRUE) {
+  if (to_v0) {
+    ver_ind = 0
+  } else {
+    ver_dirs = list.dirs(proc_dir, full.names=FALSE, recursive=TRUE)
+    if (length(ver_dirs)==0) {
+      ver_ind = 1
+    } else {
+      ver_nums = as.integer(substr(ver_dirs, 2))
+      max_ver = max(ver_nums)
+      ver_ind = max_ver+1
+    }
+  }
+  ver_dir = paste0(proc_dir, "/v", ver_ind)
+}
+
+fp_save_prod_df = function(prod_df, ver_dir, overwrite=overwrite) {
+  if (!dir.exists(ver_dir)) dir.create(ver_dir, recursive = TRUE)
+  saveRDS(prod_df, file.path(ver_dir, "prod_df.Rds"))
+}

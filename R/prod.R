@@ -98,8 +98,6 @@ df_to_prod_df = function(df, prod,  df_to_prod_cols=NULL,prod_to_df_cols=NULL, p
     df_to_prod_cols = intersect(names(df), prod$vars)
   }
 
-  # Ensures correct order
-  #df_to_prod_cols = df_to_prod_cols[intersect(prod$vars, names(df_to_prod_cols))]
 
   # Not all prod cols are in df
   mod_df = select_cols(df, df_to_prod_cols)
@@ -114,7 +112,7 @@ df_to_prod_df = function(df, prod,  df_to_prod_cols=NULL,prod_to_df_cols=NULL, p
     prod_df = prod_df[, prod$vars]
 
   if (convert_class) {
-    prod_df = prod_set_df_col_class(df, prod)
+    prod_df = prod_set_df_col_class(prod_df, prod)
   }
   prod_df
 }
