@@ -7,7 +7,7 @@ example = function() {
   res_df = fp_pick_prod_ver(parent_dir, c("readme_var", "readme_overview"))
   res_df = fp_pick_prod_ver(project_dirs, "readme_var")
 
-  pref = fp_prod_ver_pref(proc_regex = c("_mocr$"))
+  pref = fp_pref(proc_regex = c("_mocr$"))
   ver_df = fp_pick_prod_ver(project_dirs, "tab_html", pref = pref)
   ver_df
 
@@ -17,8 +17,9 @@ example = function() {
 #' Picks a single product version
 #'
 #' Allows for fp_dir to be a large directory with multiple
-fp_pick_prod_ver = function(parent_dir, prod_id, proc_id=NULL, pref=fp_prod_ver_pref(), return_score_df = FALSE) {
+fp_pick_prod_ver = function(parent_dir, prod_id, proc_id=NULL, pref=fp_pref(), return_score_df = FALSE) {
   restore.point("fp_pick_prod_ver")
+  pref = fp_normalize_pref(pref)
   #prod_dir = file.path(fp_dir, prod_id)
 
   df = fp_all_ver_info(parent_dir, prod_id,proc_id = proc_id)
@@ -60,7 +61,7 @@ fp_pick_prod_ver = function(parent_dir, prod_id, proc_id=NULL, pref=fp_prod_ver_
 
 
 
-fp_pick_and_load_prod_df = function(parent_dir, prod_id,proc_id=NULL, pref=fp_prod_ver_pref(),add_ids=TRUE, extra_cols=NULL, add_fp_dir=TRUE) {
+fp_pick_and_load_prod_df = function(parent_dir, prod_id,proc_id=NULL, pref=fp_pref(),add_ids=TRUE, extra_cols=NULL, add_fp_dir=TRUE) {
   restore.point("fp_pick_and_load_prod_df")
   ver_df =fp_pick_prod_ver(parent_dir, prod_id, proc_id, pref)
   if (NROW(ver_df)==0) return(NULL)
@@ -86,9 +87,17 @@ fp_load_newest_prod_df = function(fp_dir, prod_id, proc_id, add_ids=TRUE) {
 #' create a product version preference
 #'
 #' TO DO: expand function in future
-fp_prod_ver_pref = function(order_by = c("proc_id","ver_ind","younger"), proc_id = NULL, ver_ind=NULL, proc_regex=NULL) {
-  list(order_by=order_by, proc_id=proc_id, ver_ind=ver_ind, proc_regex=proc_regex)
+fp_pref = function(order_by = c("proc_id","ver_ind","younger"), proc_id = NULL, ver_ind=NULL, proc_regex=NULL) {
+  pref = list(order_by=order_by, proc_id=proc_id, ver_ind=ver_ind, proc_regex=proc_regex)
+  class(pref) = c("fp_pref","list")
+  pref
+}
 
+fp_normalize_pref = function(pref) {
+  if (is.character(pref)) {
+    pref = fp_pref(proc_regex = pref)
+  }
+  pref
 }
 
 fp_has_prod = function(fp_dir,prod_id, proc_id=NULL) {
@@ -98,7 +107,7 @@ fp_has_prod = function(fp_dir,prod_id, proc_id=NULL) {
 
 
 # Pick input versions and create / update pru$input_infos
-pru_pick_inputs = function(pru, prod_ids, pref=fp_prod_ver_pref(), load=TRUE) {
+pru_pick_inputs = function(pru, prod_ids, pref=fp_pref(), load=TRUE) {
   restore.point("pru_pick_input_version")
   fp_dir = pru$fp_dir
 

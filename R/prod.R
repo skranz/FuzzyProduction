@@ -2,10 +2,14 @@ example = function() {
 
 }
 
+prod_to_rclasses = function(prod) {
+  schema_fields_to_rclasses(prod$fields)
+}
 
-prod_to_json_schema = function(prod,obj_arr=c("obj","arr")[1], add_description=TRUE) {
+prod_to_json_schema = function(prod,obj_arr=c("obj","arr")[1], add_description=TRUE, allow_null_def=TRUE) {
+  restore.point("prod_to_json_schema")
   schema = prod_to_schema(prod,obj_arr)
-  DataSchema::to_json_schema(schema,add_description = TRUE)
+  DataSchema::to_json_schema(schema,add_description = TRUE, allow_null_def=allow_null_def)
 }
 
 prod_to_schema = function(prod, obj_arr=c("obj","arr")[1]) {

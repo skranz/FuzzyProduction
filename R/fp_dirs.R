@@ -91,13 +91,13 @@ fp_all_proc_dir = function(fp_dir, prod_id, only_success=TRUE) {
 
 fp_all_outage_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = if (need_backup) "outage_pru.Rds" else "has_outage.txt", need_backup=TRUE) {
   restore.point("fp_all_outage_ver_dirs")
-  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
+  fp_all_ver_dirs(fp_dir, prod_id=prod_id, proc_id=proc_id, search_file=search_file)
 }
 
 
 
 fp_all_error_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = if (need_backup) "error_pru.Rds" else "has_error.txt",  need_backup=FALSE) {
-  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
+  fp_all_ver_dirs(fp_dir, prod_id=prod_id, proc_id=proc_id, search_file=search_file)
 }
 
 fp_has_prod_df = function(ver_dir) {
@@ -109,7 +109,7 @@ fp_ver_dir_ok = function(ver_dir, search_file = "prod_df.Rds") {
 }
 
 fp_all_ok_ver_dirs = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "prod_df.Rds") {
-  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file)
+  fp_all_ver_dirs(fp_dir, prod_id, proc_id, search_file=search_file)
 }
 
 
