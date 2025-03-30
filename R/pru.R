@@ -33,6 +33,12 @@ pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_d
   pru
 }
 
+# Save a temporary pru object for debugging purposes
+temp_pru_save = function(pru) {
+  if (!dir.exists(pru$ver_dir)) dir.create(pru$ver_dir, recursive = TRUE)
+  saveRDS(pru, file.path(pru$ver_dir, "temp_pru.Rds"))
+}
+
 pru_save = function(pru, prod_df, save_fields=c("proc_info","issues"), save_pru=TRUE) {
   restore.point("pru_save")
   if (!dir.exists(pru$ver_dir)) dir.create(pru$ver_dir, recursive = TRUE)
