@@ -182,6 +182,7 @@ fp_all_ver_info = function(fp_dir, prod_id=NULL,proc_id=NULL, search_file = "pro
 fp_rerun_error_ver = function(ver_dir, pru_file = file.path(ver_dir, "error_pru.Rds")) {
   if (!file.exists(pru_file)) {
     cat("\n", pru_file, " does not exist. Cannot re-run.\n")
+    return(NULL)
   }
   pru = readRDS(pru_file)
   pru_rerun(pru)
