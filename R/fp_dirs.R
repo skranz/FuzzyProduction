@@ -15,6 +15,13 @@ example = function() {
   df = fp_load_all_prod_df(fp_dir, "cell_base")
 }
 
+fp_load_pru = function(ver_dir) {
+  pru_file = file.path(ver_dir, "pru.Rds")
+  if (!file.exists(pru_file)) return(NULL)
+  pru = readRDS(pru_file)
+  pru
+}
+
 fp_newest_ver_dir = function(fp_dir, prod_id, proc_id=NULL) {
   restore.point("fp_newest_ver_dir")
   info = fp_all_ver_info(fp_dir, prod_id=prod_id, proc_id=proc_id)
