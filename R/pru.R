@@ -1,8 +1,23 @@
 #' Initialize a production run
-pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_dir=NULL,proc_info=NULL, ...) {
-  pru = list(fp_dir=fp_dir,prod_id=prod_id, proc_id=proc_id, to_v0=to_v0, proc_info=proc_info, ...)
+pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_dir=NULL,proc_info=NULL, ..., pru=NULL) {
+  if (is.null(pru)) {
+    pru = list(fp_dir=fp_dir,prod_id=prod_id, proc_id=proc_id, to_v0=to_v0, proc_info=proc_info, ...)
+  } else {
+    copy.into.env(pru)
+  }
 
   restore.point("pru_init")
+  pru = pru_init_dirs(pru, ver_dir=ver_dir)
+
+  if (length(pru$proc_dir)==0) stop("proc_dir not correctly specified.")
+  pru
+}
+
+pru_init_dirs = function(pru, ver_dir=pru[["ver_dir"]], to_v0 = pru[["to_v0"]]) {
+  restore.point("pru_init_dirs")
+  fp_dir = pru$fp_dir
+  proc_id = pru$proc_id
+  prod_id = pru$prod_id
 
   if (is.null(ver_dir)) {
     pru$proc_dir = proc_dir = file.path(fp_dir,pru$prod_id, pru$proc_id)
@@ -27,9 +42,6 @@ pru_init = function(fp_dir,prod_id, proc_id=proc_info$proc_id, to_v0=TRUE, ver_d
     pru$ver_id = basename(ver_dir)
     pru$ver_ind = as.integer(stri_sub(pru$ver_id, 2))
   }
-
-
-  if (length(pru$proc_dir)==0) stop("proc_dir not correctly specified.")
   pru
 }
 
