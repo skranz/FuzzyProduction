@@ -24,7 +24,7 @@ fp_pick_prod_ver = function(parent_dir, prod_id, proc_id=NULL, pref=fp_pref(), r
 
   df = fp_all_ver_info(parent_dir, prod_id,proc_id = proc_id)
   if (NROW(df)==0) {
-    return(fp_err_obj(paste0("\nNo version of product ", prod_id, " found in ", fp_dir,"\n")))
+    return(fp_err_obj(paste0("\nNo version of product ", prod_id, " found in ", parent_dir,"\n")))
     return(NULL)
   }
   df$prod_dir = fp_ver_dir_to_prod_dir(df$ver_dir)
