@@ -66,6 +66,31 @@ fp_ver_dir_to_proc_id = function(ver_dir) {
 }
 
 
+fp_ver_dir_to_proc_dir = function(ver_dir) {
+  dirname(ver_dir)
+}
+
+fp_proc_dir_to_prod_dir = function(proc_dir) {
+  dirname(proc_dir)
+}
+
+fp_proc_dir_to_proc_id = function(proc_dir) {
+  basename(proc_dir)
+}
+
+fp_proc_dir_to_fp_dir = function(proc_dir) {
+  dirname(dirname(proc_dir))
+}
+
+
+fp_prod_dir_to_fp_dir = function(prod_dir) {
+  dirname(prod_dir)
+}
+
+fp_prod_dir_to_prod_id = function(prod_dir) {
+  basename(prod_dir)
+}
+
 fp_all_prod_id = function(fp_dir) {
   list.dirs(fp_dir,full.names = FALSE,recursive = FALSE)
 }
