@@ -82,6 +82,13 @@ fp_proc_dir_to_fp_dir = function(proc_dir) {
   dirname(dirname(proc_dir))
 }
 
+fp_proc_dir_to_ver_dirs = function(proc_dir, ver_ind=NULL) {
+  if (!is.null(ver_ind)) {
+    file.path(proc_dir,paste0("v", ver_ind))
+  } else {
+    list.dirs(proc_dir,full.names = TRUE, recursive = FALSE)
+  }
+}
 
 fp_prod_dir_to_fp_dir = function(prod_dir) {
   dirname(prod_dir)
