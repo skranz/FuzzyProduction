@@ -204,6 +204,7 @@ fp_detect_df_li_key = function(df_list) {
 }
 
 # create diff tables as data frame
+# create diff tables as data frame
 fp_diff_tables = function(df_list, key = NULL) {
   restore.point("fp_diff_tables")
   library(purrr)
@@ -221,17 +222,46 @@ fp_diff_tables = function(df_list, key = NULL) {
   org_cols = setdiff(names(df),".version")
   key_cols = key
   val_cols = setdiff(names(df), union(key_cols, ".version"))
-  df$.value = paste_cols(df, val_cols, "|")
-  df$.key = paste_cols(df, key_cols, "|")
+
+  # Serialize columns to create a comparable key/value string.
+  # This now handles list-columns by converting them to canonical JSON.
+  serialize_for_compare = function(df_part) {
+    if (length(names(df_part)) == 0) return(rep("", NROW(df_part)))
+    s_cols <- lapply(df_part, function(col) {
+      if (is.list(col)) {
+        sapply(col, function(x) {
+          if (is.null(x) || (is.list(x) && length(x) == 0) || (is.data.frame(x) && nrow(x) == 0)) return("[]")
+          jsonlite::toJSON(x, auto_unbox = TRUE, sort = TRUE)
+        })
+      } else {
+        as.character(col)
+      }
+    })
+    do.call(stringi::stri_join, c(s_cols, list(sep = "|")))
+  }
+
+  df$.value = serialize_for_compare(df[, val_cols, drop = FALSE])
+  df$.key = serialize_for_compare(df[, key_cols, drop = FALSE])
   df$.order = 1:NROW(df)
-  df
 
   df = df %>%
     group_by(.key) %>%
     mutate(.key_order = min(.order)) %>%
     ungroup()
 
-  df[] = lapply(df, as.character)
+  # Convert all columns to character for display, pretty-printing list-cols
+  df_char = df
+  for (col in org_cols) {
+      if(is.list(df_char[[col]])) {
+          df_char[[col]] = sapply(df_char[[col]], function(x) {
+            if (is.null(x)) return(NA_character_)
+            if ((is.list(x) && length(x) == 0) || (is.data.frame(x) && nrow(x) == 0)) return("[]")
+            jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
+          })
+      }
+  }
+  df = as.data.frame(lapply(df_char, as.character))
+
 
   diff_str = function(x) {
     x[x==x[1] & seq_along(x)>1]=""
@@ -246,7 +276,7 @@ fp_diff_tables = function(df_list, key = NULL) {
       .group_n = n(),
     ) %>%
     group_by(.key_order) %>%
-    arrange(.group_n, .value) %>%
+    arrange(desc(.group_n), .value) %>%
     mutate(.in_order = 1:n()) %>%
     mutate(.differs = .value != first(.value)) %>%
     filter( (1:n())==1 | .differs) %>%
@@ -260,5 +290,6 @@ fp_diff_tables = function(df_list, key = NULL) {
 }
 
 paste_cols = function(df, cols = names(df), sep="|") {
+  if (length(cols) == 0) return(rep("", NROW(df)))
   do.call(stri_join,c(df[cols],list(sep="|")))
 }

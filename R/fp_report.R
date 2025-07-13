@@ -20,37 +20,76 @@
 
 # Helper function to generate an HTML table from a data frame
 # Not exported.
+# Helper function to generate an HTML table from a data frame
+# Not exported.
 .df_to_html_table = function(df) {
   if (is.null(df) || NROW(df) == 0) {
     return("<p><em>No data available.</em></p>")
   }
 
-  html = c("<table>", "<thead>", "<tr>")
-
   # Header
-  for (col_name in names(df)) {
-    html = c(html, paste0("<th>", .html_escape(col_name), "</th>"))
-  }
-  html = c(html, "</tr>", "</thead>", "<tbody>")
+  header_html <- paste0("<th>", .html_escape(names(df)), "</th>", collapse = "")
+  header_html <- paste0("<thead><tr>", header_html, "</tr></thead>")
 
-  # Body
-  for (i in 1:NROW(df)) {
-    html = c(html, "<tr>")
-    # Using a vectorized approach for cells in a row is faster
-    cells = sapply(df[i, ], function(cell_value) {
-      if (is.na(cell_value)) {
-        cell_text = "<em>NA</em>"
-      } else {
-        cell_text = .html_escape(cell_value)
-      }
-      paste0("<td>", cell_text, "</td>")
-    })
-    html = c(html, cells)
-    html = c(html, "</tr>")
+  # Body - process column by column in a vectorized manner
+  td_cols <- lapply(df, function(col) {
+
+    # 1. Handle list-columns (for nested data)
+    if (is.list(col)) {
+      # Convert each list element to a pretty JSON string
+      cell_content <- sapply(col, function(item) {
+        # Explicitly handle NA, which would otherwise become "null" in JSON
+        if (is.atomic(item) && length(item) == 1 && is.na(item)) {
+          return(NA_character_)
+        }
+        # Represent nulls or empty lists/dfs as empty JSON array for consistency
+        if (is.null(item) || (is.list(item) && length(item) == 0) || (is.data.frame(item) && nrow(item) == 0)) {
+           return("[]")
+        }
+        # Convert to JSON
+        jsonlite::toJSON(item, pretty = TRUE, auto_unbox = TRUE)
+      })
+
+      is_na <- is.na(cell_content)
+      escaped_content <- .html_escape(cell_content)
+      html_cells <- ifelse(is_na, "<em>NA</em>", paste0("<pre>", escaped_content, "</pre>"))
+
+    # 2. Handle atomic columns (including stringified JSON from diff reports)
+    } else {
+      cell_content <- as.character(col)
+      is_na <- is.na(cell_content)
+      # Check for strings that look like JSON objects or arrays
+      is_json_like <- !is_na & (startsWith(cell_content, "{") | startsWith(cell_content, "["))
+      escaped_content <- .html_escape(cell_content)
+      # Apply formatting conditionally
+      html_cells <- ifelse(is_na, "<em>NA</em>",
+                           ifelse(is_json_like, paste0("<pre>", escaped_content, "</pre>"),
+                                  escaped_content))
+    }
+    # Wrap all processed cells in <td> tags
+    paste0("<td>", html_cells, "</td>")
+  })
+
+  # Combine columns into rows using vectorized paste
+  if (length(td_cols) > 0) {
+    body_rows <- do.call(paste0, td_cols)
+  } else {
+    body_rows <- rep("", NROW(df)) # Handles df with 0 columns
   }
 
-  html = c(html, "</tbody>", "</table>")
-  paste(html, collapse = "\n")
+
+  # Wrap each row in <tr> tags
+  body_html <- paste0("<tr>", body_rows, "</tr>", collapse = "\n")
+  body_html <- paste0("<tbody>\n", body_html, "\n</tbody>")
+
+  # Final assembly
+  paste(
+    "<table>",
+    header_html,
+    body_html,
+    "</table>",
+    collapse = "\n"
+  )
 }
 
 fp_report_css = function() {

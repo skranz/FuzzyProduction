@@ -8,4 +8,4 @@ Description: Testing and Benchmarking of Fuzzy Outputs: Think AI generated conte
 License: GPL >= 2.0
 Encoding: UTF-8
 LazyData: true
-Depends: DataSchema, restorepoint, dplyr, stringi
+Depends: DataSchema, restorepoint, dplyr, stringi, jsonlite
