@@ -33,6 +33,16 @@ fp_newest_ver_dir = function(fp_dir, prod_id, proc_id=NULL) {
     pull(ver_dir)
 }
 
+fp_ver_id_to_ver_dir = function(fp_dir, prod_id, ver_id) {
+  loc = stri_locate_first_fixed(ver_id,"--")
+  proc_id = stri_sub(ver_id,1, loc[,1]-1)
+  ver_ind = stri_sub(ver_id,loc[,2]+2)
+
+  fp_all_ver_dirs(fp_dir, prod_id=prod_id, proc_id=proc_id,ver_ind=ver_ind)
+
+
+}
+
 fp_ver_dir_to_fp_dir = function(ver_dir) {
   dirname(dirname(dirname(ver_dir)))
 }
@@ -41,6 +51,12 @@ fp_ver_dir_to_prod_dir = function(ver_dir) {
   dirname(dirname(ver_dir))
 }
 
+fp_ver_dir_to_ver_id = function(ver_dir) {
+  dname = dirname(ver_dir)
+  proc_id = basename(dname)
+  ver_id = paste0(proc_id,"--", basename(ver_dir))
+  ver_id
+}
 
 
 fp_ver_dir_to_ids = function(ver_dir) {

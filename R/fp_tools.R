@@ -1,3 +1,14 @@
+
+add_col_left = function(df, ...) {
+  args = list(...)
+  restore.point("add_col_left")
+
+  len = NROW(df)
+  args = lapply(args, function(x) rep(x, length=len))
+  bind_cols(as_tibble(args), df)
+}
+
+
 na_val = function(x, val=0) {
   x[is.na(x)] = val
   x

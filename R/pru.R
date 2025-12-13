@@ -24,11 +24,11 @@ pru_init_dirs = function(pru, ver_dir=pru[["ver_dir"]], to_v0 = pru[["to_v0"]]) 
     if (to_v0) {
       pru$ver_ind = 0
     } else {
-      ver_dirs = list.dirs(proc_dir, full.names=FALSE, recursive=TRUE)
+      ver_dirs = list.dirs(proc_dir, full.names=FALSE, recursive=FALSE)
       if (length(ver_dirs)==0) {
         pru$ver_ind = 1
       } else {
-        ver_nums = as.integer(substr(ver_dirs, 2))
+        ver_nums = as.integer(stri_sub(ver_dirs, 2))
         max_ver = max(ver_nums)
         pru$ver_ind = max_ver+1
       }
