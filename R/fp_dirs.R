@@ -277,6 +277,7 @@ fp_proc_dir_to_new_ver_dir = function(proc_dir, to_v0=TRUE) {
     }
   }
   ver_dir = paste0(proc_dir, "/v", ver_ind)
+  ver_dir
 }
 
 fp_save_prod_df = function(prod_df, ver_dir, overwrite=overwrite) {
