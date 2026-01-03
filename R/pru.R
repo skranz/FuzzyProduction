@@ -95,7 +95,10 @@ pru_next_stage = function(pru, stage_fn) {
   pru$cur_stage = stage_fn
   pru$items = NULL
   pru$outage_inds = pru$item_status = pru$item_cat = pru$num_outage = pru$num_error =  pru$num_ok  = pru$all_ok = NULL
-  do.call(stage_fn, list(pru))
+  fp_backup_last_run_pru(pru, "pru_next_stage_before")
+  pru = do.call(stage_fn, list(pru))
+  fp_backup_last_run_pru(pru, "pru_next_stage_after")
+  pru
 }
 
 
@@ -133,6 +136,7 @@ pru_make_items = function(pru, run_fun, num_items=NROW(df), fill_outage=TRUE, ba
   pru$items = items
   restore.point("pru_run_all_rai_post")
   if (verbose) cat(paste0(" ", round(as.numeric(Sys.time())-start_time), " sec.\n"))
+  fp_backup_last_run_pru(pru, "pru_make_items_after")
   pru
 }
 
@@ -152,5 +156,7 @@ pru_rerun = function(pru) {
     cat("\nNo stage nor fun_call object stored in pru. Cannot re-run it.")
     pru
   }
-  run_preserved_call(pru$fun_call)
+  pru = run_preserved_call(pru$fun_call)
+  fp_backup_last_run_pru(pru, "pru_rerun_after")
+  pru
 }
